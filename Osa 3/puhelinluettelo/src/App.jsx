@@ -92,9 +92,14 @@ const App = () => {
         setNewName("");
         setNewNumber("");
         showNotification(newPerson.name + " was modified successfully!", true);
-      }).catch(() => {
-        showNotification("Person " + newPerson.name + " was already removed from server.", false);
-        setPersons(persons.filter((person) => person.id !== newPerson.id));
+      }).catch((error) => {
+        const e = error.response.data;
+        if (e.errorName === 'ValidationError') {
+          showNotification(e.error, false);
+        } else {
+          showNotification("Person " + newPerson.name + " was already removed from server.", false);
+          setPersons(persons.filter((person) => person.id !== newPerson.id));
+        }
       });
 
       return;
@@ -106,6 +111,9 @@ const App = () => {
       setNewName("");
       setNewNumber("");
       showNotification(newPerson.name + " was added successfully!", true);
+    }).catch(error => {
+      const e = error.response.data;
+      showNotification(e.error, false);
     });
   };
 
