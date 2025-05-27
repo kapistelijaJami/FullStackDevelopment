@@ -7,26 +7,26 @@ const app = express()
 app.use(express.static('dist'))
 app.use(express.json())
 
-morgan.token('data', (req, res) => { return JSON.stringify(req.body) })
+morgan.token('data', (req) => { return JSON.stringify(req.body) })
 //Formaatti tiny:lle + requestin data:
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'))
 
-app.get("/info", (request, response) => {
+app.get('/info', (request, response) => {
   Person.countDocuments({}).then(count => {
-    let message = "Phonebook has info for " + count + " people"
-    message += "<br /> <br />"
+    let message = 'Phonebook has info for ' + count + ' people'
+    message += '<br /> <br />'
     message += new Date().toString()
     response.send(message)
   })
 })
 
-app.get("/api/persons", (request, response, next) => {
+app.get('/api/persons', (request, response, next) => {
   Person.find({}).then((result) => {
     response.json(result)
   }).catch(error => next(error))
 })
 
-app.get("/api/persons/:id", (request, response, next) => {
+app.get('/api/persons/:id', (request, response, next) => {
   Person.findById(request.params.id).then(result => {
     if (result) {
       response.json(result)
@@ -36,13 +36,13 @@ app.get("/api/persons/:id", (request, response, next) => {
   }).catch(error => next(error))
 })
 
-app.delete("/api/persons/:id", (request, response, next) => {
-  Person.findByIdAndDelete(request.params.id).then(result => {
+app.delete('/api/persons/:id', (request, response, next) => {
+  Person.findByIdAndDelete(request.params.id).then(() => {
     response.status(204).end()
   }).catch(error => next(error))
 })
 
-app.post("/api/persons", (request, response, next) => {
+app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
   if (!body.name || !body.number) {

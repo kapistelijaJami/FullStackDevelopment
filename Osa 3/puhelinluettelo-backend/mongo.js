@@ -7,7 +7,7 @@ if (process.argv.length < 3) {
 
 const pw = process.argv[2]
 
-const url = "mongodb+srv://fullstack:" + pw + "@cluster0.l3t9tcz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+const url = 'mongodb+srv://fullstack:' + pw + '@cluster0.l3t9tcz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 mongoose.set('strictQuery', false)
 mongoose.connect(url)
 
@@ -27,16 +27,16 @@ if (process.argv.length === 5) {
     number: number
   })
 
-  person.save().then(result => {
-    console.log("added " + person.name + " number " + person.number + " to phonebook")
+  person.save().then(() => {
+    console.log('added ' + person.name + ' number ' + person.number + ' to phonebook')
     mongoose.connection.close()
   })
 } else {
   //List numbers
   Person.find({}).then(result => {
-    console.log("phonebook:")
+    console.log('phonebook:')
     result.forEach(person => {
-      console.log(person.name + " " + person.number)
+      console.log(person.name + ' ' + person.number)
     })
     mongoose.connection.close()
   })
