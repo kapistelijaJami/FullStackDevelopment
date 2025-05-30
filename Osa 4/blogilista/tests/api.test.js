@@ -1,5 +1,6 @@
 const { test, describe, after, beforeEach } = require('node:test')
 const assert = require('node:assert')
+const bcrypt = require('bcrypt')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
@@ -7,6 +8,7 @@ const app = require('../app')
 const api = supertest(app)
 
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 const initialBlogs = [
   {
@@ -23,12 +25,30 @@ const initialBlogs = [
   }
 ]
 
-beforeEach(async () => {
-  await Blog.deleteMany({})
-  await Blog.insertMany(initialBlogs)
-})
+const initialUsers = [
+  {
+    "username": "username",
+    "name": "Name",
+    "id": "6838e37ebd664a662aa60995"
+  },
+  {
+    "username": "usefges",
+    "name": "Name2",
+    "id": "6838e647eaeeb248e976744f"
+  },
+  {
+    "username": "usefges2",
+    "name": "Name3",
+    "id": "6838e905ce8068a790e51208"
+  }
+]
 
 describe('testing /api/blogs', () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await Blog.insertMany(initialBlogs)
+  })
+
   describe('blog get method', () => {
     test('blogs are returned as json', async () => {
       await api
@@ -148,6 +168,66 @@ describe('testing /api/blogs', () => {
       assert.strictEqual(found.author, originalAuthor)  //author hasn't changed
       assert.strictEqual(found.url, originalUrl)  //url hasn't changed
     })
+  })
+})
+
+describe('testing /api/users', () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
+    const passwordHash = await bcrypt.hash('salainen', 10)
+    const users = initialUsers.map(u => ({ ...u, passwordHash: passwordHash }))
+    await User.insertMany(users)
+  })
+
+  test('inserting new user', async () => {
+    const newUser = { username: "testname", password: "secret" }
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const response = await api.get('/api/users')
+    assert.strictEqual(response.body.length, initialUsers.length + 1)
+
+    const found = response.body.find(u => u.username === newUser.username)
+    assert(found)
+    assert.strictEqual(found.username, newUser.username)
+  })
+
+  test('inserting same user twice returns correct error', async () => {
+    const newUser = { username: "testname", password: "secret" }
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const res = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert.strictEqual(res.body.error, 'expected `username` to be unique')
+  })
+
+  test('cannot insert if too short username', async () => {
+    const newUser = { username: "a", password: "secret" }
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+  })
+
+  test('cannot insert if too short password', async () => {
+    const newUser = { username: "testname", password: "a" }
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
   })
 })
 
