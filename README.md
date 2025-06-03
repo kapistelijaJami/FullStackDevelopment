@@ -1,3 +1,3 @@
 # FullStack Web Development
 
-[Puhelinluettelo Backend](https://puhelinluettelo-backend-4mxl.onrender.com/)
+[Puhelinluettelo App](https://puhelinluettelo-backend-4mxl.onrender.com/)
