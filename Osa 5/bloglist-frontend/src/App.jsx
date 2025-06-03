@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import Notification from './components/Notification'
-import BlogForm from './components/BlogForm'
+import BlogList from './components/BlogList'
 import LoginForm from './components/LoginForm'
 import blogService from './services/blogs'
 
@@ -34,7 +34,7 @@ const App = () => {
     <div>
       <Notification message={notificationMessage} success={notificationSuccess} />
       {!user && <LoginForm setUser={setUser} showNotification={showNotification} />}
-      {user && <BlogForm user={user} logout={logout} showNotification={showNotification} />}
+      {user && <BlogList user={user} logout={logout} showNotification={showNotification} />}
     </div>
   )
 }

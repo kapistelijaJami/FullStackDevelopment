@@ -1,35 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
-import Blog from '../components/Blog'
-import Toggleable from '../components/Toggleable'
-import blogService from '../services/blogs'
-import PropTypes from 'prop-types'
+import { useState } from 'react'
 
-
-const BlogForm = ({user, logout, showNotification}) => {
-  const [blogs, setBlogs] = useState([])
+const BlogForm = ({createBlog}) => {
   const [newTitle, setNewTitle] = useState('')
   const [newAuthor, setNewAuthor] = useState('')
   const [newUrl, setNewUrl] = useState('')
-  const blogFormRef = useRef(null)
-
-
-  useEffect(() => {
-    if (user) {
-      blogService.getAll().then(blogs =>
-        setBlogs(blogs)
-      )
-    }
-  }, [user])
-
-  const updateBlog = blog => {
-    const newBlogs = blogs.map(b => b.id === blog.id ? blog : b)
-    setBlogs(newBlogs)
-  }
-
-  const removeBlog = blog => {
-    const newBlogs = blogs.filter(b => b.id !== blog.id)
-    setBlogs(newBlogs)
-  }
 
   const addBlog = async (event) => {
     event.preventDefault()
@@ -39,50 +13,24 @@ const BlogForm = ({user, logout, showNotification}) => {
       url: newUrl
     }
 
-    try {
-      const returnedBlog = await blogService.create(blogObject)
-      setBlogs(blogs.concat(returnedBlog))
-      setNewTitle('')
-      setNewAuthor('')
-      setNewUrl('')
-      blogFormRef.current.toggleVisibility()
-
-      showNotification('a new blog ' + returnedBlog.title + ' added', true)
-    } catch (e) {
-      showNotification('adding new blog failed', false)
-    }
+    await createBlog(blogObject)
+    setNewTitle('')
+    setNewAuthor('')
+    setNewUrl('')
   }
 
-  blogs.sort((a, b) => b.likes - a.likes)
-
   return (
-    <div>
-      <h2>blogs</h2>
-      {user.name} logged in <button onClick={logout}>logout</button>
-      <br /><br />
+    <>
+      <h2>create new</h2>
+      <form onSubmit={ addBlog }>
+        title: <input value={newTitle} onChange={({ target }) => setNewTitle(target.value)} placeholder="title" /><br />
+        author: <input value={newAuthor} onChange={({ target }) => setNewAuthor(target.value)} placeholder="author" /><br />
+        url: <input value={newUrl} onChange={({ target }) => setNewUrl(target.value)} placeholder="url" /><br />
 
-      <Toggleable buttonLabel="create new blog" ref={blogFormRef}>
-        <h2>create new</h2>
-        <form onSubmit={addBlog}>
-          title: <input value={newTitle} onChange={({ target }) => setNewTitle(target.value)} /><br />
-          author: <input value={newAuthor} onChange={({ target }) => setNewAuthor(target.value)} /><br />
-          url: <input value={newUrl} onChange={({ target }) => setNewUrl(target.value)} /><br />
-
-          <button type="submit">save</button>
-        </form>
-      </Toggleable>
-
-      {blogs.map(blog =>
-        <Blog key={blog.id} user={user} blog={blog} updateBlog={updateBlog} removeBlog={removeBlog} showNotification={showNotification} />
-      )}
-    </div>
+        <button type="submit">save</button>
+      </form>
+    </>
   )
-}
-
-BlogForm.propTypes = {
-  user: PropTypes.object.isRequired,
-  logout: PropTypes.func.isRequired,
-  showNotification: PropTypes.func.isRequired
 }
 
 export default BlogForm
